@@ -622,6 +622,11 @@ public class JsonArray implements Iterable<Object>, ClusterSerializable, Shareab
     return copy(DEFAULT_CLONER);
   }
 
+  @Override
+  public ClusterSerializable copyForSharedData() {
+    return copy();
+  }
+
   /**
    * Deep copy of the JSON array.
    *

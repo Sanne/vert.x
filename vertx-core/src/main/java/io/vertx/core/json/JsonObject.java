@@ -1065,6 +1065,11 @@ public class JsonObject implements Iterable<Map.Entry<String, Object>>, ClusterS
     return copy(DEFAULT_CLONER);
   }
 
+  @Override
+  public ClusterSerializable copyForSharedData() {
+    return copy();
+  }
+
   /**
    * Deep copy of this JSON object.
    *

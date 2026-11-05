@@ -12,6 +12,7 @@
 package io.vertx.core.shareddata;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ClusterSerializableUtils;
 
 /**
  * Objects implementing this interface will be written to and read from a {@link Buffer} when:
@@ -39,4 +40,16 @@ public interface ClusterSerializable {
    * @return the position after the last serialized byte
    */
   int readFromBuffer(int pos, Buffer buffer);
+
+  /**
+   * Create a copy of this instance for storage in a local shared data structure.
+   * <p>
+   * The default implementation writes this instance to a {@link Buffer} and reads it back into a new instance.
+   * Implementations that can copy themselves more efficiently should override it.
+   *
+   * @return a copy of this instance
+   */
+  default ClusterSerializable copyForSharedData() {
+    return ClusterSerializableUtils.copy(this);
+  }
 }

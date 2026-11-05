@@ -16,6 +16,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.CharsetUtil;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.shareddata.ClusterSerializable;
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.impl.Arguments;
 import io.vertx.core.impl.buffer.VertxByteBufAllocator;
@@ -622,6 +623,11 @@ public class BufferImpl implements BufferInternal {
   @Override
   public int hashCode() {
     return buffer != null ? buffer.hashCode() : 0;
+  }
+
+  @Override
+  public ClusterSerializable copyForSharedData() {
+    return copy();
   }
 
   @Override

@@ -14,6 +14,7 @@ package io.vertx.tests.shareddata;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.ClusterSerializable;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.core.shareddata.SharedData;
@@ -275,6 +276,36 @@ public class LocalSharedDataTest extends VertxTestBase {
   }
 
   @Test
+  public void testClusterSerializableCopyForSharedDataOverride() {
+    LocalMap<String, Object> map = sharedData.getLocalMap("foo");
+    SelfCopyingClusterSerializable value = new SelfCopyingClusterSerializable(TestUtils.randomAlphaString(15));
+    map.put("key", value);
+    SelfCopyingClusterSerializable copy = (SelfCopyingClusterSerializable) map.get("key");
+    assertEquals(value.str, copy.str);
+    assertNotSame(value, copy);
+  }
+
+  @Test
+  public void testCopyForSharedData() {
+    JsonObject json = new JsonObject().put("foo", new JsonArray().add(1)).put("bar", Buffer.buffer("baz"));
+    ClusterSerializable jsonCopy = json.copyForSharedData();
+    assertEquals(json, jsonCopy);
+    assertNotSame(json, jsonCopy);
+    assertNotSame(json.getJsonArray("foo"), ((JsonObject) jsonCopy).getJsonArray("foo"));
+
+    JsonArray array = new JsonArray().add(new JsonObject().put("foo", "bar"));
+    ClusterSerializable arrayCopy = array.copyForSharedData();
+    assertEquals(array, arrayCopy);
+    assertNotSame(array, arrayCopy);
+    assertNotSame(array.getJsonObject(0), ((JsonArray) arrayCopy).getJsonObject(0));
+
+    Buffer buffer = Buffer.buffer("foo");
+    ClusterSerializable bufferCopy = buffer.copyForSharedData();
+    assertEquals(buffer, bufferCopy);
+    assertNotSame(buffer, bufferCopy);
+  }
+
+  @Test
   public void testKeys() {
     LocalMap<String, String> map = sharedData.getLocalMap("foo");
     map.put("foo1", "val1");
@@ -384,6 +415,29 @@ public class LocalSharedDataTest extends VertxTestBase {
 
     assertEquals(value, result);
     assertNotSame(value, result);
+  }
+
+  private static class SelfCopyingClusterSerializable implements ClusterSerializable {
+    private final String str;
+
+    SelfCopyingClusterSerializable(String str) {
+      this.str = str;
+    }
+
+    @Override
+    public void writeToBuffer(Buffer buffer) {
+      throw new UnsupportedOperationException("copyForSharedData() should be used");
+    }
+
+    @Override
+    public int readFromBuffer(int pos, Buffer buffer) {
+      throw new UnsupportedOperationException("copyForSharedData() should be used");
+    }
+
+    @Override
+    public ClusterSerializable copyForSharedData() {
+      return new SelfCopyingClusterSerializable(str);
+    }
   }
 
   private static class ShareableObject implements Shareable {

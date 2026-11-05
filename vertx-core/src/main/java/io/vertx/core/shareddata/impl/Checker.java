@@ -11,7 +11,6 @@
 
 package io.vertx.core.shareddata.impl;
 
-import io.vertx.core.impl.ClusterSerializableUtils;
 import io.vertx.core.impl.SerializableUtils;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
@@ -88,7 +87,7 @@ class Checker {
 
   private static ClusterSerializable copyClusterSerializable(ClusterSerializable obj) {
     logDeveloperInfo(obj);
-    return ClusterSerializableUtils.copy(obj);
+    return obj.copyForSharedData();
   }
 
   private static void logDeveloperInfo(Object obj) {
